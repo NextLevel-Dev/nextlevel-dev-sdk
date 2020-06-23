@@ -101,7 +101,7 @@ public class BannerProxy : MonoBehaviour
             {
                 var icon = DownloadHandlerTexture.GetContent(webRequest);
 
-                BannerUpdated?.Invoke(icon, _banner.Name.ToUpper());
+                BannerUpdated?.Invoke(icon, _banner.name);
             }
             else
             {
