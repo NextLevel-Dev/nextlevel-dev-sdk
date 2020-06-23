@@ -25,8 +25,10 @@ public class BannerProxy : MonoBehaviour
     public static BannerProxy Instance;
 
     public GameObject Banner;
-    public RawImage Icon;
-    public Text Name;
+    public RawImage IconUgui;
+    public Text NameUgui;
+    public UITexture IconNgui;
+    public UILabel NameNgui;
 
     public string Url;
 
@@ -101,7 +103,11 @@ public class BannerProxy : MonoBehaviour
             if (!webRequest.isNetworkError && !webRequest.isHttpError)
             {
                 var texture = DownloadHandlerTexture.GetContent(webRequest);
-                Icon.texture = texture;
+
+                if (IconNgui != null)
+                    IconNgui.mainTexture = texture;
+                if (IconUgui != null)
+                    IconUgui.texture = texture;
             }
             else
             {
@@ -110,7 +116,11 @@ public class BannerProxy : MonoBehaviour
             }
         }
 
-        Name.text = _banner.name.ToUpper();
+        if (NameNgui != null)
+            NameNgui.text = _banner.Name.ToUpper();
+        if (NameUgui != null)
+            NameUgui.text = _banner.Name.ToUpper();
+
         Banner.SetActive(true);
     }
 
