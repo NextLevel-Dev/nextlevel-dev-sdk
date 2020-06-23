@@ -22,14 +22,7 @@ public class BannerProxy : MonoBehaviour
         public Action<string> OpenStoreLink;
     }
 
-    public static BannerProxy Instance;
-
     public GameObject Banner;
-    public RawImage IconUgui;
-    public Text NameUgui;
-    public UITexture IconNgui;
-    public UILabel NameNgui;
-
     public string Url;
 
 #if UNITY_ANDROID
@@ -45,7 +38,11 @@ public class BannerProxy : MonoBehaviour
     private static bool IsCached => _banner != null;
     private static BannerData _banner;
 
+    public delegate void BannerUpdate(Texture icon, string name);
+    public event BannerUpdate BannerUpdated;
+
     public static BannerConfig Config;
+    public static BannerProxy Instance;
 
     void Awake()
     {
@@ -102,12 +99,9 @@ public class BannerProxy : MonoBehaviour
 
             if (!webRequest.isNetworkError && !webRequest.isHttpError)
             {
-                var texture = DownloadHandlerTexture.GetContent(webRequest);
+                var icon = DownloadHandlerTexture.GetContent(webRequest);
 
-                if (IconNgui != null)
-                    IconNgui.mainTexture = texture;
-                if (IconUgui != null)
-                    IconUgui.texture = texture;
+                BannerUpdated?.Invoke(icon, _banner.Name.ToUpper());
             }
             else
             {
@@ -115,12 +109,7 @@ public class BannerProxy : MonoBehaviour
                 yield break;
             }
         }
-
-        if (NameNgui != null)
-            NameNgui.text = _banner.Name.ToUpper();
-        if (NameUgui != null)
-            NameUgui.text = _banner.Name.ToUpper();
-
+        
         Banner.SetActive(true);
     }
 
