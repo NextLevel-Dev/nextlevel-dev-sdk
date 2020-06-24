@@ -39,7 +39,7 @@ public class BannerProxy : MonoBehaviour
     private static BannerData _banner;
 
     public delegate void BannerUpdate(Texture icon, string name);
-    public event BannerUpdate BannerUpdated;
+    public static event BannerUpdate BannerUpdated;
 
     public static BannerConfig Config;
     public static BannerProxy Instance;
