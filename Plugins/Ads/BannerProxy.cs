@@ -57,7 +57,10 @@ public class BannerProxy : MonoBehaviour
             return;
         }
 
-        CacheBanner();
+        if (!string.IsNullOrEmpty(Url))
+        {
+            CacheBanner();
+        }
     }
 
     public void CacheBanner()
