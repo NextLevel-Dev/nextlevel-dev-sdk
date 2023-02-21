@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Analytics;
 using UnityEngine.Networking;
-using UnityEngine.UI;
 
 public class BannerProxy : MonoBehaviour
 {
@@ -12,8 +11,14 @@ public class BannerProxy : MonoBehaviour
     public class BannerData
     {
         public string name;
-        public string icon_url;
-        public string package_id;
+        public string iconUrl;
+        public string packageId;
+    }
+
+    private class RequestForm
+    {
+        public string platform;
+        public string gameId;
     }
 
     public struct BannerConfig
@@ -44,12 +49,12 @@ public class BannerProxy : MonoBehaviour
     public static BannerConfig Config;
     public static BannerProxy Instance;
 
-    void Awake()
+    private void Awake()
     {
         Instance = this;
     }
 
-    void Start()
+    private void Start()
     {
         if (Config.GameId == null || Config.OpenStoreLink == null)
         {
@@ -72,53 +77,61 @@ public class BannerProxy : MonoBehaviour
 
     private IEnumerator GetBanner()
     {
-        var form = new WWWForm();
-
-        form.AddField("platform", Platform);
-        form.AddField("gameId", Config.GameId);
-
-        using (var www = UnityWebRequest.Post(Url, form))
+        var form = new RequestForm
         {
-            yield return www.SendWebRequest();
+            gameId = Config.GameId,
+            platform = Platform
+        };
 
-            if (www.isNetworkError || www.isHttpError)
+        string json = JsonUtility.ToJson(form);
+        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(json);
+
+        using (var req = new UnityWebRequest(Url, "POST"))
+        {
+            req.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            req.downloadHandler = new DownloadHandlerBuffer();
+            req.SetRequestHeader("Content-Type", "application/json");
+
+            yield return req.SendWebRequest();
+
+            if (req.result is UnityWebRequest.Result.ConnectionError or UnityWebRequest.Result.ProtocolError)
             {
-                Debug.LogError(www.error);
+                Debug.LogError(req.error);
                 Banner.SetActive(IsCached);
                 yield break;
             }
 
-            _banner = JsonUtility.FromJson<BannerData>(www.downloadHandler.text);
-
-            StartCoroutine(SetBanner());
+            _banner = JsonUtility.FromJson<BannerData>(req.downloadHandler.text);
         }
+        
+        StartCoroutine(SetBanner());
     }
 
     private IEnumerator SetBanner()
     {
-        using (var webRequest = UnityWebRequestTexture.GetTexture(_banner.icon_url))
+        using (var req = UnityWebRequestTexture.GetTexture(_banner.iconUrl))
         {
-            yield return webRequest.SendWebRequest();
+            yield return req.SendWebRequest();
 
-            if (!webRequest.isNetworkError && !webRequest.isHttpError)
+            if (req.result != UnityWebRequest.Result.ConnectionError && req.result != UnityWebRequest.Result.ProtocolError)
             {
-                var icon = DownloadHandlerTexture.GetContent(webRequest);
+                var icon = DownloadHandlerTexture.GetContent(req);
 
                 BannerUpdated?.Invoke(icon, _banner.name);
             }
             else
             {
-                Debug.LogError(webRequest.error);
+                Debug.LogError(req.error);
                 yield break;
             }
         }
-        
+
         Banner.SetActive(true);
     }
 
     public void Open()
     {
-        Config.OpenStoreLink(_banner.package_id);
+        Config.OpenStoreLink(_banner.packageId);
         Analytics.CustomEvent(TagBanner, new Dictionary<string, object>
         {
             { "game", _banner.name }
