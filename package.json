@@ -2,7 +2,7 @@
 	"name": "com.nextleveldev.sdk",
 	"displayName": "NextLevel Dev SDK",
 	"description": "This package contains utilities for Unity projects",
-	"version": "0.1.8",
+	"version": "0.1.9",
 	"unity": "2021.3",
 	"license": "MIT",
 	"repository": "karlobencic/nextlevel-dev-sdk",

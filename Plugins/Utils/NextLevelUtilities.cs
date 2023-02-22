@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
-public static class Utilities
+public static class NextLevelUtilities
 {
     public const string NumberCommaFormat = "N0";
 

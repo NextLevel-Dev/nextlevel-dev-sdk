@@ -82,7 +82,7 @@ public static class ExtensionMethods
     {
         if (checkInfinity && value == decimal.MaxValue)
             return "Infinity";
-        return compactFormat ? value.ToString(Utilities.NumberCommaFormat) : value.ToString();
+        return compactFormat ? value.ToString(NextLevelUtilities.NumberCommaFormat) : value.ToString();
     }
 
     public static void Invoke(this MonoBehaviour b, Action method, float delay)
